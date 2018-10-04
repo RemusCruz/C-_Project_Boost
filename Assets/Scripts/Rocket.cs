@@ -1,33 +1,57 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Rocket : MonoBehaviour {
+public class Rocket : MonoBehaviour
+{
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        ProcessInput();
-	}
+    Rigidbody rigidBody;
+    AudioSource audioSource;
 
-    private void ProcessInput()
+    // Use this for initialization
+    void Start()
     {
-        if (Input.GetKey(KeyCode.Space))
+        rigidBody = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Rotate();
+        Thrust();
+    }
+
+    private void Rotate()
+    {
+        rigidBody.freezeRotation = true;
+
+        if (Input.GetKey(KeyCode.A))
         {
-            print("Space Pressed");
+            transform.Rotate(Vector3.forward);
         }
-        if (Input.GetKey(KeyCode.RightArrow))
+        else if (Input.GetKey(KeyCode.D))
         {
-            print("Right Arrow Pressed");
+            transform.Rotate(-Vector3.forward);
         }
-        else if (Input.GetKey(KeyCode.LeftArrow))
+
+        rigidBody.freezeRotation = false;
+    }
+
+    private void Thrust()
+    {
+        if (Input.GetKey(KeyCode.Space)) // can thrust while rotating
         {
-            print("Left Arrow Key Pressed");
+            rigidBody.AddRelativeForce(Vector3.up);
+            if (!audioSource.isPlaying) // so it doesn't layer
+            {
+                audioSource.Play();
+            }
+        }
+        else
+        {
+            audioSource.Stop();
         }
     }
 }
