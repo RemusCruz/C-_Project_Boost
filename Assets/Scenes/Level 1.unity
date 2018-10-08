@@ -1966,6 +1966,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rcsThrust: 100
   mainThrust: 100
+  mainEngine: {fileID: 8300000, guid: cab3ced7de3ad854592f56a269946ffb, type: 3}
+  winSound: {fileID: 8300000, guid: 9eb3743777ee63c4381fcd025cb71c34, type: 3}
+  deathSound: {fileID: 8300000, guid: b924b37c40187e040b9d5e2ee7250e7f, type: 3}
 --- !u!82 &1884232033
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2318,7 +2321,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4448248637076336, guid: 71130edb6ee5f754dbd82c107f432bed, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 44.9
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 4448248637076336, guid: 71130edb6ee5f754dbd82c107f432bed, type: 2}
       propertyPath: m_LocalPosition.y
