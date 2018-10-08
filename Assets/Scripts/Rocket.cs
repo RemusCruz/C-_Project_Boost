@@ -13,6 +13,9 @@ public class Rocket : MonoBehaviour
     Rigidbody rigidBody;
     AudioSource audioSource;
 
+    enum State { Alive, Dying, Transcending }
+    State state = State.Alive; 
+
     // Use this for initialization
     void Start()
     {
@@ -23,12 +26,20 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Thrust();
-        Rotate();
+        if (state == State.Alive)
+        {
+            Thrust();
+            Rotate();
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (state != State.Alive)
+        {
+            return;
+        }
+
        switch (collision.gameObject.tag)
         {
             case "Friendly":
@@ -36,13 +47,25 @@ public class Rocket : MonoBehaviour
                 break;
             case "Finished":
                 print("Hit Finished");
-                SceneManager.LoadScene(1);
+                state = State.Transcending;
+                Invoke("LoadNextScene", 1f); // parameterise
                 break;
             default:
                 print("Dead");
-                SceneManager.LoadScene(0);
+                state = State.Dying;
+                Invoke("LodFirstLevel", 1f);
                 break;
         }
+    }
+
+    private void LoadFirstLevel()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    private void LoadNextScene()
+    {
+        SceneManager.LoadScene(1);
     }
 
     private void Thrust()
