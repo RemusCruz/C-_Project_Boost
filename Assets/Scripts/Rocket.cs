@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
 {
-
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
     [SerializeField] float levelLoadDelay = 2f;
@@ -23,13 +20,16 @@ public class Rocket : MonoBehaviour
     AudioSource audioSource;
 
     enum State { Alive, Dying, Transcending }
-    State state = State.Alive; 
+    State state = State.Alive;
+
+    bool collisionsDisabled = false;
 
     // Use this for initialization
     void Start()
     {
         rigidBody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
+
     }
 
     // Update is called once per frame
@@ -37,25 +37,38 @@ public class Rocket : MonoBehaviour
     {
         if (state == State.Alive)
         {
-            RespondToThrust();
-            RespondToRotate();
+            RespondToThrustInput();
+            RespondToRotateInput();
+        }
+        if (Debug.isDebugBuild)
+        {
+            RespondToDebugKeys();
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void RespondToDebugKeys()
     {
-        if (state != State.Alive)
+        if (Input.GetKeyDown(KeyCode.L))
         {
-            return;
+            LoadNextLevel();
         }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            collisionsDisabled = !collisionsDisabled; // toggle
+        }
+    }
 
-       switch (collision.gameObject.tag)
+    void OnCollisionEnter(Collision collision)
+    {
+        if (state != State.Alive || collisionsDisabled) { return; }
+
+        switch (collision.gameObject.tag)
         {
             case "Friendly":
-                print("OK");
+                // do nothing
                 break;
             case "Finish":
-                StartSequenceSuccess();
+                StartSuccessSequence();
                 break;
             default:
                 StartDeathSequence();
@@ -63,9 +76,17 @@ public class Rocket : MonoBehaviour
         }
     }
 
+    private void StartSuccessSequence()
+    {
+        state = State.Transcending;
+        audioSource.Stop();
+        audioSource.PlayOneShot(success);
+        successParticles.Play();
+        Invoke("LoadNextLevel", levelLoadDelay);
+    }
+
     private void StartDeathSequence()
     {
-        print("Dead");
         state = State.Dying;
         audioSource.Stop();
         audioSource.PlayOneShot(death);
@@ -73,14 +94,9 @@ public class Rocket : MonoBehaviour
         Invoke("LoadFirstLevel", levelLoadDelay);
     }
 
-    private void StartSequenceSuccess()
+    private void LoadNextLevel()
     {
-        print("Hit Finished"); 
-        state = State.Transcending;
-        audioSource.Stop();
-        audioSource.PlayOneShot(success);
-        successParticles.Play();
-        Invoke("LoadNextScene", levelLoadDelay);
+        SceneManager.LoadScene(1); // todo allow for more than 2 levels
     }
 
     private void LoadFirstLevel()
@@ -88,12 +104,7 @@ public class Rocket : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    private void LoadNextScene()
-    {
-        SceneManager.LoadScene(1);
-    }
-
-    private void RespondToThrust()
+    private void RespondToThrustInput()
     {
         if (Input.GetKey(KeyCode.Space)) // can thrust while rotating
         {
@@ -113,12 +124,10 @@ public class Rocket : MonoBehaviour
         {
             audioSource.PlayOneShot(mainEngine);
         }
-
         mainEngineParticles.Play();
-    
     }
 
-    private void RespondToRotate()
+    private void RespondToRotateInput()
     {
         rigidBody.freezeRotation = true; // take manual control of rotation
 
